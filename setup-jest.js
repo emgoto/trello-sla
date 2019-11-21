@@ -1,0 +1,5 @@
+global.TrelloPowerUp = {
+    iframe: () => {}
+};
+
+
