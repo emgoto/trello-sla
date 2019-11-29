@@ -1,25 +1,32 @@
-export type ChecklistItem = {
-    text: string;
-    id?: string; // uuid - only required once notification is being used
-    isComplete?: boolean;
-    username?: string;
-    fullName?: string;
-    userId?: string;
-    avatarHash?: string;// last known avatarHash //TODO: need to re-get it in case it has changed
-    dueDate?: number;
-    dueDateFriendly?: string; // Date in human readbable format e.g. 1 Jan 12:00pm
-    notificationOffset?: number; // Minutes before the dueTime we want to send the notification. -1 if no notification.
+// Right now we only provide being in a column as starting the SLA
+enum Condition {
+    ColumnName = "COLUMN_NAME",
 }
 
-export type User = {
-    id: string;
-    username: string;
+type SlaCondition = {
+    conditionType: Condition;
+    condition: string;
 }
 
-export const getItems = (t): Promise<ChecklistItem[]> => t.get('card', 'shared', 'items');
-export const setItems = (t, items: ChecklistItem[]): Promise<ChecklistItem[]> => t.set('card', 'shared', 'items', items);
-export const getIsChecklistEnabled = (t): Promise<boolean> => getItems(t).then((items: ChecklistItem[]) => items ? true : false);
-export const getToken = (t): Promise<string> => t.get('member', 'private', 'authToken');
-export const setToken = (t, token): Promise<void> => t.set('member', 'private', 'authToken', token);
-export const getUsers = (t): Promise<User[]> => t.get('board', 'shared', 'users');
-export const setUsers = (t, users: User[]): Promise<void> => t.set('board', 'shared', 'users', users);
+export type SlaConfiguration = {
+    id: number;
+    name: string;
+    startCondition: SlaCondition;
+    endCondition: SlaCondition;
+    time: number; // Minutes
+}
+
+export type SlaData = {
+    startTime?: number; // In UTC. Only exists if SLA has started
+    endTime?: number; // In UTC. Only exists if SLA has ended
+}
+
+export type SlaDataMap = {
+    [id: number]: SlaData;
+}
+
+// TODO: get can technically return nothing - is it null, undefined?
+export const getConfiguration = (t): Promise<SlaConfiguration[]> => t.get('board', 'shared', 'config');
+export const setConfiguration = (t, config: SlaConfiguration[]): void => t.set('board', 'shared', 'config', config);
+export const getSlaData = (t): Promise<SlaDataMap> => t.get('card', 'shared', 'slaData');
+export const setSlaData = (t, slaData: SlaDataMap): void => t.set('card', 'shared', 'slaData', slaData);
