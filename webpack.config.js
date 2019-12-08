@@ -23,7 +23,8 @@ module.exports = {
     rules: [
       {
         test: /\.tsx?$/,
-        loader: 'awesome-typescript-loader'
+        loader: 'awesome-typescript-loader',
+        exclude: [path.resolve(__dirname, 'test/*')]
       }
     ]
   }

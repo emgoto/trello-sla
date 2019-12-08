@@ -1,8 +1,9 @@
 declare const TrelloPowerUp: any;
 const t = TrelloPowerUp.iframe();
+declare const Trello: any;
 
-import { getConfigurations, setConfigurations, SlaConfiguration, Condition, getLists } from './trello-util';
-import { getHumanReadableTime } from './util';
+import { getConfigurations, setConfigurations, SlaConfiguration, Condition, getLists, getToken, setToken } from './trello-util';
+import { getHumanReadableTime, generateUuid, truncate } from './util';
 
 let lists = [];
 
@@ -20,7 +21,7 @@ const stringToNode = (domString: string): Node => {
 
 const columnIdToName = (id: string): string => {
   const list = lists.find(list => list.id === id);
-  return list.name;
+  return list ? list.name : '<i>List no longer exists</i>';
 }
 
 const createOptionsForNewRow = (isStart: boolean): Element[] =>
@@ -45,10 +46,10 @@ const createOptions = (currentValue: string, filteredValue: string): Element[] =
 
 const getConfigString = (config: SlaConfiguration, withRowDiv: boolean = true): string => 
   `${withRowDiv ? '<div class="row clickable">' : ''}
-      <div class="col0">${config.name}</div>
+      <div class="col0">${truncate(config.name, 40, true)}</div>
       <div class="col1">
         <span class="condition-type">Start when card is in list</span>
-        <br>${columnIdToName(config.startCondition.id)}
+        <br>${truncate(columnIdToName(config.startCondition.id), 20, true)}
         <br><span class="condition-type">Ends when card is in list</span>
         <br>${columnIdToName(config.endCondition.id)}
       </div>
@@ -92,6 +93,9 @@ const getAddRowString = (withRowDiv: boolean = true): string =>
   </div>
   ${withRowDiv ? '</div>' : ''}`;
 
+const renderNotEnoughListsMessage = (): Node =>
+  stringToNode(`<div class="center"><p>This Power-Up requires you to have at least two lists! </p></div>`);
+
 async function onSave(e: Event) {
   const rowDiv = this.parentElement.parentElement;
   const index = [...rowDiv.parentElement.children].indexOf(rowDiv);
@@ -113,7 +117,7 @@ async function onSave(e: Event) {
 
   if (newRow) {
     const row = {
-      id: '1',
+      id: generateUuid(),
       startCondition: {
         type: Condition.ColumnName,
         id: start
@@ -130,12 +134,11 @@ async function onSave(e: Event) {
     configs[index].startCondition.id = start;
     configs[index].endCondition.id = end;
     configs[index].time = time;
-    configs[index].name = name;
+    configs[index].name = truncate(name, 50, false);
   }
 
   await setConfigurations(t, configs);
 
-  // TODO: need to loop through SLAs and reset ones that have changed
 }
 
 async function onCancel(e: Event) {
@@ -167,7 +170,9 @@ async function onDelete(e: Event) {
   const rowDiv = this.parentElement.parentElement;
   const index = [...rowDiv.parentElement.children].indexOf(rowDiv);
   const configs = await getConfigurations(t) || [];
-  configs.splice(index);
+
+  configs.splice(index, 1);
+
   await setConfigurations(t, configs);
 }
 
@@ -231,18 +236,50 @@ async function onRowClick(e: Event): Promise<void> {
   });
 }
 
+function onAuthenticate() {
+  t.popup({
+    type: 'confirm',
+    title: 'Authorize SLAs for Trello',
+    mouseEvent: event,
+    message: 'Please authenticate to get started with SLAs for Trello.',
+    confirmText: 'Authorize',
+    onConfirm: () => {
+      Trello.authorize({
+        type: "popup",
+        name: "SLAs for Trello",
+        expiration: "never",
+        success: () => {
+          setToken(t, Trello.token());
+        },
+        error: () => { },
+      });
+    },
+  });
+};
+
+const renderAuthenticateButton = () => 
+  stringToNode(`<div class="center"><p>To view and configure SLAs, you will need to first authenticate with SLAs for Trello.</p><button id="authenticate-btn" class="mod-bottom">Authenticate</button><p></p></div>`);
+
 t.render(async function () {
+  const container = document.getElementById('container');
+  container.innerHTML = '';
+  const token = await getToken(t);
+  if (!token) {
+    container.appendChild(renderAuthenticateButton());
+    document.getElementById('authenticate-btn').onclick = onAuthenticate;
+    t.sizeTo(document.getElementById('wrapper'));
+    return;
+  }
+
   lists = await getLists(t);
 
-  // TODO: If only one or 0 lists, can't do anything.
-
-  // TODO: If no auth, show auth screen
+  if (lists.length < 2) {
+    container.appendChild(renderNotEnoughListsMessage());
+    t.sizeTo(document.getElementById('wrapper'));
+    return;
+  }
 
   const configs = await getConfigurations(t) || [];
-
-  const container = document.getElementById('container');
-
-  container.innerHTML = '';
 
   configs.forEach((config) => {
     container.appendChild(renderConfig(config));
@@ -258,4 +295,3 @@ t.render(async function () {
   
   t.sizeTo(document.getElementById('wrapper'));
 });
-  

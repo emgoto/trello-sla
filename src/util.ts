@@ -17,6 +17,8 @@ type CardDetailedBadge = {
   callback?: () => {};
 };
 
+export const truncate = (str: string, n: number, shouldEllipse: boolean) =>
+  (str.length > n) ? str.substr(0, n-1) + `${shouldEllipse ? '&hellip;' : ''}` : str;
 
 export const getHumanReadableTime = (realMinutes: number): string => {
   const isNegative = realMinutes < 0;
@@ -79,7 +81,7 @@ export const getRunningSlas = (data: SlaDataMap, configs: SlaConfiguration[], de
         runningSlas.push({
           text: humanReadable,
           color: getColor(minutesRemaining, false),
-          ...(detailed ? { title: config.name } : {}),
+          ...(detailed ? { title: `${config.name} - Ongoing` } : {}),
           ...(!detailed ? {icon: `${window.location}img/stopwatch.svg`} : {}),
           refresh: 60,
         });
@@ -91,7 +93,7 @@ export const getRunningSlas = (data: SlaDataMap, configs: SlaConfiguration[], de
         completeSlas.push({
           text: humanReadable,
           color: getColor(minutesRemaining, true),
-          title: config.name,
+          title: `${config.name} - stopped`,
           refresh: 60
         });
       }
@@ -138,7 +140,7 @@ export const getStartTime = (actions: CardAction[], startCondition: SlaCondition
   return startTime;
 };
 
-export const getUpdatedConfigs = (actions: CardAction[], configs: SlaConfiguration[], slaMap: SlaDataMap): SlaDataMap | void => {
+export const getUpdatedSlaData = (actions: CardAction[], configs: SlaConfiguration[], slaMap: SlaDataMap): SlaDataMap | void => {
   const updatedSlaMap = slaMap;
   let hasChanged: boolean = false;
 
@@ -151,17 +153,18 @@ export const getUpdatedConfigs = (actions: CardAction[], configs: SlaConfigurati
 
     const { startTime = undefined, endTime = undefined } = updatedSlaMap[id];
 
-    const newStartTime = !startTime ? getStartTime(actions, startCondition) : undefined;
-
-    const startTimeExists: number | void =  startTime ? startTime : newStartTime;
-    const newEndTime = startTimeExists && !endTime ? getEndTime(actions, endCondition, startTimeExists) : undefined;
+    // We always recalculate start times and end times, in case the config has been edited.
+    const newStartTime = getStartTime(actions, startCondition)
+    const startTimeHasChanged: boolean = newStartTime !== startTime;
+    const newEndTime = startTime || newStartTime ? getEndTime(actions, endCondition, startTime || newStartTime) : undefined;
+    const endTimeHasChanged: boolean = newEndTime !== endTime;
     
-    if (newStartTime) {
+    if (startTimeHasChanged) {
       hasChanged = true;
       updatedSlaMap[id].startTime = newStartTime;
     }
 
-    if (newEndTime) {
+    if (endTimeHasChanged) {
       hasChanged = true;
       updatedSlaMap[id].endTime = newEndTime;
     }
@@ -170,13 +173,40 @@ export const getUpdatedConfigs = (actions: CardAction[], configs: SlaConfigurati
   return hasChanged ? updatedSlaMap : undefined;
 };
 
+// Find and remove any data from configs that have been since-deleted
+const getSlaDataWithRemovals = (configs: SlaConfiguration[], slaMap: SlaDataMap): SlaDataMap | void => {
+  const keys = Object.keys(slaMap);
+  if (keys.length === 0) {
+    return undefined;
+  }
+  const configIds = configs.map(config => config.id);
+
+  let removed = undefined;
+  keys.forEach(key => {
+    if (configIds.indexOf(key) === -1) {
+      removed = true;
+      delete slaMap[key];
+    }
+  });
+
+  return removed ? slaMap : undefined;
+}
+
 export const updateConfigs = (t: any, configs: SlaConfiguration[], slaMap: SlaDataMap): void => {
   getCardActions(t).then((actions) => {
-   const updatedConfigs = getUpdatedConfigs(actions, configs, slaMap);
-    if (updatedConfigs) {
-      setSlaData(t, updatedConfigs);
+    const updatedSlaData = getUpdatedSlaData(actions, configs, slaMap);
+    if (updatedSlaData) {
+      const slaDataWithRemovals = getSlaDataWithRemovals(configs, updatedSlaData);
+      const result = slaDataWithRemovals ? slaDataWithRemovals : updatedSlaData;
+      setSlaData(t, result);
+    } else {
+      const slaDataWithRemovals = getSlaDataWithRemovals(configs, slaMap);
+      if (slaDataWithRemovals) {
+        setSlaData(t, slaDataWithRemovals);
+      }
     }
   });
 };
 
-
+// https://gist.github.com/jed/982883
+export const generateUuid = function (): string { return ("" + 1e7 + -1e3 + -4e3 + -8e3 + -1e11).replace(/1|0/g, function () { return (0 | Math.random() * 16).toString(16); }); };

@@ -1,4 +1,4 @@
-import { getSlaData, getConfigurations, Condition } from './trello-util';
+import { getSlaData, getConfigurations, getToken } from './trello-util';
 import { getRunningSlas, updateConfigs } from './util';
 
 declare const TrelloPowerUp: any;
@@ -18,37 +18,48 @@ TrelloPowerUp.initialize({
         url: './settings.html',
         height: 360,
         fullscreen: false,
-        title: 'SLA Settings'
+        title: 'SLAs for Trello'
       }),
       condition: 'edit'
     }];
   },
   // Show running SLAs on front of card
   'card-badges': function (t) {
-    return getConfigurations(t).then((configs) => {
-      if (!configs) {
+    return getToken(t).then(token => {
+      if (!token) {
         return [];
       }
+    
+      return getConfigurations(t).then(configs => {
+        if (!configs) {
+          return [];
+        }
 
-      return getSlaData(t).then((data) => {
-        updateConfigs(t, configs, data || {});
-        return !data ? [] : getRunningSlas(data, configs, false);
+        return getSlaData(t).then((data) => {
+          updateConfigs(t, configs, data || {});
+          return !data ? [] : getRunningSlas(data, configs, false);
+        });
       });
     });
   },
   // Show running and completed SLAs on back of card
   'card-detail-badges': function (t) {
-    return getSlaData(t).then((data) => {
-      if (!data) {
+    return getToken(t).then(token => {
+      if (!token) {
         return [];
       }
-      return getConfigurations(t).then((configs) => {
-        return !configs ? [] : getRunningSlas(data, configs, true);
+      return getSlaData(t).then((data) => {
+        if (!data) {
+          return [];
+        }
+        return getConfigurations(t).then((configs) => {
+          return !configs ? [] : getRunningSlas(data, configs, true);
+        });
       });
     });
   },
 },
   {
-    appKey: 'bd1e7e486269d148ecd1be71ad5a3f1a', // TODO: get new appKey
+    appKey: '652d72f229f65b3457533bd55fdcf436',
     appName: 'SLAs '
   });

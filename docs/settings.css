@@ -51,6 +51,7 @@
 
 .col1 select {
     margin-bottom: 0;
+    max-width: 180px;
 }
 
 .center-in-row {
@@ -103,4 +104,8 @@ div[class="row"] {
 
 div[class="row"] > div > span {
     color: #D7D7D7;
+}
+
+.center {
+    text-align: center;
 }
