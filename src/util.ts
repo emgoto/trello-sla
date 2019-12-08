@@ -67,7 +67,11 @@ export const getColor = (minutesRemaining: number, isComplete: boolean): string 
   return 'green';
 };
 
-export const getRunningSlas = (data: SlaDataMap, configs: SlaConfiguration[], detailed: boolean): CardBadge[] | CardDetailedBadge[] => {
+type DynamicBadge = {
+  dynamic: () => CardBadge,
+};
+
+export const getRunningSlas = (data: SlaDataMap, configs: SlaConfiguration[], detailed: boolean): CardBadge[] | CardDetailedBadge[] | DynamicBadge[] => {
   const runningSlas = [];
   const completeSlas = [];
   
@@ -79,11 +83,15 @@ export const getRunningSlas = (data: SlaDataMap, configs: SlaConfiguration[], de
         const minutesRemaining = getMinutesRemaining(startTime, unix, config);
         const humanReadable = getHumanReadableTime(minutesRemaining);
         runningSlas.push({
-          text: humanReadable,
-          color: getColor(minutesRemaining, false),
-          ...(detailed ? { title: `${config.name} - Ongoing` } : {}),
-          ...(!detailed ? {icon: `${window.location}img/stopwatch.svg`} : {}),
-          refresh: 60,
+          dynamic: function() {
+            return {
+              text: humanReadable,
+              color: getColor(minutesRemaining, false),
+              ...(detailed ? { title: `${config.name} - Ongoing` } : {}),
+              ...(!detailed ? {icon: `${window.location}img/stopwatch.svg`} : {}),
+              refresh: 60,
+            }
+          }
         });
       }
 
@@ -94,7 +102,6 @@ export const getRunningSlas = (data: SlaDataMap, configs: SlaConfiguration[], de
           text: humanReadable,
           color: getColor(minutesRemaining, true),
           title: `${config.name} - stopped`,
-          refresh: 60
         });
       }
 
