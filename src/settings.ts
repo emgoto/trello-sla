@@ -72,8 +72,8 @@ const getConfigEditMode = (config?: SlaConfiguration): string => {
       <br><select class="end-select"></select>
     </div>
     <div class="col2">
-      <input class="hours-input" type="number" min="0" oninput="validity.valid||(value='')" value="${config ? Math.floor(config.time / 60) : 1}"></input><span>h</span>
-      <input class="minutes-input" type="number" min="0" oninput="validity.valid||(value='')" value="${config ? config.time - Math.floor(config.time / 60) * 60 : 30}"></input><span>min</span>
+      <input class="hours-input" type="number" min="0" max="10000" oninput="validity.valid||(value='')" value="${config ? Math.floor(config.time / 60) : 1}"></input><span>h</span>
+      <input class="minutes-input" type="number" min="0" max="10000" oninput="validity.valid||(value='')" value="${config ? config.time - Math.floor(config.time / 60) * 60 : 30}"></input><span>min</span>
     </div>
     <div class="col3">
         <button id="save-btn" class="mod-primary mod-bottom">Save</button>
