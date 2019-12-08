@@ -61,5 +61,5 @@ TrelloPowerUp.initialize({
 },
   {
     appKey: '652d72f229f65b3457533bd55fdcf436',
-    appName: 'SLAs '
+    appName: 'SLAs for Trello'
   });

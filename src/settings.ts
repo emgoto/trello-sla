@@ -248,6 +248,7 @@ function onAuthenticate() {
         type: "popup",
         name: "SLAs for Trello",
         expiration: "never",
+        return_url:"https://emgoto.github.io/trello-sla/", 
         success: () => {
           setToken(t, Trello.token());
         },
