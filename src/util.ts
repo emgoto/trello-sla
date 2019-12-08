@@ -82,7 +82,6 @@ export const getRunningSlas = (data: SlaDataMap, configs: SlaConfiguration[], de
         runningSlas.push({
           dynamic: function() {
             const unix = moment().valueOf();
-            console.log('testing dynamic', unix);
             const minutesRemaining = getMinutesRemaining(startTime, unix, config);
             const humanReadable = getHumanReadableTime(minutesRemaining);
             return {
