@@ -1,0 +1,106 @@
+#wrapper {
+    padding: 8px;
+}
+
+#duration-container {
+    display: flex;
+}
+
+.row {
+    padding: 0 8px;
+    border-radius: 3px;
+    display: grid;
+    grid-template-columns: 22.5% 27.5% 30% 20%;
+    height: 88px;
+}
+
+.row.clickable:hover{
+    background-color:  	#EBECEE;
+    cursor: pointer;
+}
+
+.header {
+    padding: 0 8px;
+    display: grid;
+    grid-template-columns: 32.5% 32.5% 25% 10%;
+}
+
+.final-row {
+    margin: 8px 0;
+}
+
+.final-row:hover {
+    background-color:  	#EBECEE;
+}
+
+.col0 {
+    grid-column: 1 / 2;
+    font-weight: bold;
+    padding-top: 30px;
+}
+
+.col0 input {
+    width: 112px;
+    margin-bottom: 0px;
+    height: 28px;
+}
+
+.col1 {
+    grid-column: 2 / 3;
+}
+
+.col1 select {
+    margin-bottom: 0;
+}
+
+.center-in-row {
+    display: flex;           
+    flex-direction: column;
+    justify-content: center;
+}
+
+.col2 {
+    grid-column: 3 / 4;
+    display: flex;
+    margin-top: 28px;
+}
+
+.col3 {
+    grid-column: 4 / 5;
+    display: flex;
+    padding-top: 24px;
+}
+
+.col2 span {
+    margin: 4px;
+}
+
+.col2 input {
+    width: 60px;
+    height: 28px;
+}
+
+.condition-type {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #A7A7A7;
+    margin-bottom: -4px;
+}
+
+.add-row {
+    margin-top: 32px;
+    color: #A7A7A7;
+}
+
+button {
+    height: 32px;
+    margin: 0 4px;
+}
+
+div[class="row"] {
+    color: #D7D7D7;
+}
+
+div[class="row"] > div > span {
+    color: #D7D7D7;
+}

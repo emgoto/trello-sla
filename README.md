@@ -1,6 +1,6 @@
 ## Accessing this Power-Up
 
-This Power-Up's docs folder is published using Github Pages and can be accessed from this URL: https://emgoto.github.io/checklist/ You'll need to put that link in your Trello Power-ups admin page.
+This Power-Up's docs folder is published using Github Pages and can be accessed from this URL: https://emgoto.github.io/trello-sla/ You'll need to put that link in your Trello Power-ups admin page.
 
 ## Watch any js changes
 
@@ -25,3 +25,8 @@ jekyll serve
 Make sure to run `npm run build` before pushing changes. This will use the settings in `webpack.config.js` and put your js files into the `docs/js` folder.
 
 We use docs instead of public as this is a limitation of the way Github Pages works.
+
+## Calculating SLAs
+We make use of Trello's actions API (this requires the user to authenticate and provide us their token) to grab all the times a card has been moved from one list to another.
+
+When a new SLA is created, 

@@ -1,7 +1,7 @@
-declare const TrelloPowerUp: any;
+import { getSlaData, getConfigurations, Condition } from './trello-util';
+import { getRunningSlas, updateConfigs } from './util';
 
-import { getSlaData, getConfiguration } from './trello-util';
-import { getRunningSlas } from './util';
+declare const TrelloPowerUp: any;
 
 window.Promise = TrelloPowerUp.Promise;
 
@@ -10,8 +10,8 @@ TrelloPowerUp.initialize({
   'board-buttons': function (t) {
     return [{
       icon: {
-        dark: '',
-        light: ''
+        dark: `${window.location}img/stopwatch.svg`,
+        light: `${window.location}img/stopwatch.svg`,
       },
       text: 'SLAs',
       callback: (): void => t.modal({
@@ -25,17 +25,14 @@ TrelloPowerUp.initialize({
   },
   // Show running SLAs on front of card
   'card-badges': function (t) {
-    return getConfiguration(t).then((config) => {
-
-      // TODO: loop through configurations, and see if any can be newly-applied 
-      // TODO: will need to get list of actions on card, and see if move to list occurred
+    return getConfigurations(t).then((configs) => {
+      if (!configs) {
+        return [];
+      }
 
       return getSlaData(t).then((data) => {
-        if (!data) {
-          return [];
-        }
-
-        return getRunningSlas(data, config, false);
+        updateConfigs(t, configs, data || {});
+        return !data ? [] : getRunningSlas(data, configs, false);
       });
     });
   },
@@ -45,8 +42,8 @@ TrelloPowerUp.initialize({
       if (!data) {
         return [];
       }
-      getConfiguration(t).then((config) => {
-        return getRunningSlas(data, config, true);
+      return getConfigurations(t).then((configs) => {
+        return !configs ? [] : getRunningSlas(data, configs, true);
       });
     });
   },
