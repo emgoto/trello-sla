@@ -237,24 +237,15 @@ async function onRowClick(e: Event): Promise<void> {
 }
 
 function onAuthenticate() {
-  t.popup({
-    type: 'confirm',
-    title: 'Authorize SLAs for Trello',
-    mouseEvent: event,
-    message: 'Please authenticate to get started with SLAs for Trello.',
-    confirmText: 'Authorize',
-    onConfirm: () => {
-      Trello.authorize({
-        type: "popup",
-        name: "SLAs for Trello",
-        expiration: "never",
-        return_url:"https://emgoto.github.io/trello-sla/", 
-        success: () => {
-          setToken(t, Trello.token());
-        },
-        error: () => { },
-      });
+  return Trello.authorize({
+    type: "popup",
+    name: "SLAs for Trello",
+    expiration: "never",
+    return_url:"https://emgoto.github.io/trello-sla/", 
+    success: () => {
+      setToken(t, Trello.token());
     },
+    error: () => { },
   });
 };
 
