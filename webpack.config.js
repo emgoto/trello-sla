@@ -3,7 +3,8 @@ const path = require('path');
 module.exports = {
   entry: {
     index: './src/index.ts',
-    settings: './src/settings.ts'
+    settings: './src/settings.ts',
+    auth: './src/auth.ts'
   },
   output: {
     filename: '[name].js',

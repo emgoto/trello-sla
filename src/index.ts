@@ -1,7 +1,8 @@
-import { getSlaData, getConfigurations, getToken } from './trello-util';
+import { getSlaData, getConfigurations, getToken, setToken } from './trello-util';
 import { getRunningSlas, updateConfigs } from './util';
 
 declare const TrelloPowerUp: any;
+declare const Trello: any;
 
 window.Promise = TrelloPowerUp.Promise;
 
@@ -58,6 +59,19 @@ TrelloPowerUp.initialize({
       });
     });
   },
+  'authorization-status': function(t, options){
+    return getToken(t)
+    .then(function(authToken) {
+      return { authorized: authToken != null }
+    });
+  },
+  'show-authorization': function(t, options){
+    return t.popup({
+      title: 'SLAs for Trello',
+      url: './auth.html',
+      height: 100,
+    });
+  }  
 },
   {
     appKey: '652d72f229f65b3457533bd55fdcf436',
