@@ -37,6 +37,7 @@ export type SlaDataMap = {
 export type CardAction = CreateCardAction | UpdateCardAction;
 
 export type UpdateCardAction = {
+    id: string;
     data: {
         listAfter: {id: string};
         listBefore: {id: string};
@@ -46,6 +47,7 @@ export type UpdateCardAction = {
 }
 
 export type CreateCardAction = {
+    id: string;
     data: {
         list: {id: string};
     };
@@ -53,9 +55,23 @@ export type CreateCardAction = {
     date: string; // format 2019-11-29T21:05:28.510Z
 }
 
-export type List = {
-    id: string,
-    name: string,
+type NameAndId = {
+    id: string;
+    name: string;
+}
+
+export type List = NameAndId;
+
+export type BoardAction = {
+    data: {
+        board: NameAndId;
+        card: NameAndId;
+        list?: NameAndId;
+        listBefore?: NameAndId;
+        listAfter?: NameAndId;
+    };
+    date: string;
+    type: CardActionType;
 }
 
 export const getConfigurations = (t): Promise<SlaConfiguration[] | void> => t.get('board', 'shared', 'config');
@@ -64,6 +80,25 @@ export const getSlaData = (t): Promise<SlaDataMap | void> => t.get('card', 'shar
 export const setSlaData = (t, slaData: SlaDataMap): void => t.set('card', 'shared', 'slaData', slaData);
 export const getToken = (t): Promise<string | void> => t.get('member', 'private', 'authToken');
 export const setToken = (t, token): Promise<void> => t.set('member', 'private', 'authToken', token);
+
+/**
+ * TODO: the problem with getting all board actions is that there is a limit of 1000
+ * And that the actions for closed cards are also counted.
+ */ 
+export const getBoardActions = async (t): Promise<BoardAction[]> => {
+    const { board: boardId } = t.getContext();
+    const token = await getToken(t);
+    const url = `https://api.trello.com/1/boards/${boardId}/actions?limit=1000&filter=updateCard:idList,createCard&member=false&memberCreator=false&key=${key}&token=${token}`;
+    return axios.get(url)
+        .then(response => {
+            return response.data;
+        })
+        .catch((e) => {
+            if (e && e.response && e.response.status && e.response.status === 401) {
+                setToken(t, undefined);
+            }
+        });
+};
 
 export const getCardActions = async (t): Promise<CardAction[]> => {
     const { card: cardId } = t.getContext();
@@ -76,6 +111,7 @@ export const getCardActions = async (t): Promise<CardAction[]> => {
     });
 };
 
+// TODO: don't need to call API for this when there is t.lists()
 export const getLists = async (t): Promise<List[]> => {
     const { board: boardId } = t.getContext();
     const token = await getToken(t);
@@ -85,4 +121,4 @@ export const getLists = async (t): Promise<List[]> => {
             setToken(t, undefined);
         }
     });
-}
+};

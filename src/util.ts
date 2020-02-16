@@ -1,6 +1,6 @@
 declare const moment: any;
 
-import { setSlaData, SlaDataMap, SlaConfiguration, getCardActions, CardAction, CardActionType, SlaCondition } from './trello-util';
+import { getToken, setSlaData, SlaDataMap, SlaConfiguration, getCardActions, getBoardActions, CardAction, CardActionType, SlaCondition, getConfigurations, BoardAction, getSlaData } from './trello-util';
 
 type CardBadge = {
   text: string;
@@ -114,8 +114,6 @@ export const getRunningSlas = (data: SlaDataMap, configs: SlaConfiguration[], de
     return allSlas;
 };
 
-
-
 export const getEndTime = (actions: CardAction[], endCondition: SlaCondition, startTime: number): number | void => {
     let endTime: number | void = undefined;
     actions.forEach((action) => {
@@ -199,19 +197,52 @@ const getSlaDataWithRemovals = (configs: SlaConfiguration[], slaMap: SlaDataMap)
     return removed ? slaMap : undefined;
 };
 
-export const updateConfigs = (t: any, configs: SlaConfiguration[], slaMap: SlaDataMap): void => {
-    getCardActions(t).then((actions) => {
-        const updatedSlaData = getUpdatedSlaData(actions, configs, slaMap);
-        if (updatedSlaData) {
-            const slaDataWithRemovals = getSlaDataWithRemovals(configs, updatedSlaData);
-            const result = slaDataWithRemovals ? slaDataWithRemovals : updatedSlaData;
-            setSlaData(t, result);
-        } else {
-            const slaDataWithRemovals = getSlaDataWithRemovals(configs, slaMap);
-            if (slaDataWithRemovals) {
-                setSlaData(t, slaDataWithRemovals);
-            }
+export const updateConfigs = (t: any, configs: SlaConfiguration[], slaMap: SlaDataMap, actions: CardAction[]): void => {
+    const updatedSlaData = getUpdatedSlaData(actions, configs, slaMap);
+    if (updatedSlaData) {
+        const slaDataWithRemovals = getSlaDataWithRemovals(configs, updatedSlaData);
+        const result = slaDataWithRemovals ? slaDataWithRemovals : updatedSlaData;
+        setSlaData(t, result);
+    } else {
+        const slaDataWithRemovals = getSlaDataWithRemovals(configs, slaMap);
+        if (slaDataWithRemovals) {
+            setSlaData(t, slaDataWithRemovals);
         }
+    }
+};
+
+export const getActionsPerCard = (actions: BoardAction[]): {[key: string]: CardAction[]} => {
+    const map = {};
+    actions.forEach(action => {
+        if (map[action.data.card.id] === undefined) {
+            map[action.data.card.id] = [];
+        }
+        map[action.data.card.id].push(action);
+    });
+  
+    return map;
+};
+
+export const updateAllConfigs = async (t: any) => {
+    const token = await getToken(t);
+    if (!token) {
+        return [];
+    }
+
+    const configs = await getConfigurations(t);
+    if (!configs) {
+        return [];
+    }
+
+    const actions = await getBoardActions(t);
+    const actionsPerCard = getActionsPerCard(actions);
+    const cardIds = Object.keys(actionsPerCard);
+
+    const slaMap = await getSlaData(t);
+
+    cardIds.forEach(cardId => {
+        const cardActions = actionsPerCard[cardId];
+        updateConfigs(t, configs, slaMap || {}, cardActions);
     });
 };
 

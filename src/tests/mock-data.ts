@@ -1,4 +1,4 @@
-import { CreateCardAction, UpdateCardAction, CardActionType, SlaCondition, Condition } from '../trello-util';
+import { BoardAction, CreateCardAction, UpdateCardAction, CardActionType, SlaCondition, Condition } from '../trello-util';
 
 export const createCardAction = (listId: string, date: string): CreateCardAction => ({
     data: {
@@ -6,6 +6,7 @@ export const createCardAction = (listId: string, date: string): CreateCardAction
     },
     type: CardActionType.createCard,
     date,
+    id: '123',
 });
 
 export const updateCardAction = (afterListId: string, date: string): UpdateCardAction => ({
@@ -14,10 +15,20 @@ export const updateCardAction = (afterListId: string, date: string): UpdateCardA
         listAfter: {id: afterListId},
     },
     type: CardActionType.updateCard,
-    date, 
+    date,
+    id: '123', 
 });
 
 export const slaCondition = (listId: string): SlaCondition => ({
     type: Condition.ColumnName,
     id: listId,
+});
+
+export const createBoardAction = (cardId: string): BoardAction => ({
+    data: {
+        board: { id: 'id', name: 'name'},
+        card: { id: cardId, name: 'name'},
+    },
+    date: '',
+    type: CardActionType.updateCard,
 });
