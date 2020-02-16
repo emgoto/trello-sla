@@ -109,3 +109,17 @@ div[class="row"] > div > span {
 .center {
     text-align: center;
 }
+
+#meatballs-btn {
+    background: transparent url(img/meatballs.svg) 6px 2px/20px 20px no-repeat;
+    width: 32px;
+    min-width: 32px;
+    height: 24px;
+    margin-left: auto;
+}
+
+
+#meatballs-btn:hover {
+    background-color: #CCCCCC;
+    border-radius: 4px;
+}

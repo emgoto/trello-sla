@@ -12,6 +12,7 @@ const END_SELECT = '.end-select';
 const HOURS_INPUT = '.hours-input';
 const MINUTES_INPUT = '.minutes-input';
 const NAME_INPUT = '.name-input';
+const MEATBALLS_BTN = '#meatballs-btn';
 
 const stringToNode = (domString: string): Node => {
     const wrapper = document.createElement('div');
@@ -56,7 +57,9 @@ const getConfigString = (config: SlaConfiguration, withRowDiv = true): string =>
         <br>${columnIdToName(config.endCondition.id)}
       </div>
       <div class="col2">Duration: ${getHumanReadableTime(config.time)}</div>
-      <div class="col3"><button id="delete-btn" class="mod-bottom">Delete</button></div>
+      <div class="col3">
+        <button id="meatballs-btn" class="mod-bottom"></button>
+      </div>
   ${withRowDiv ? '</div>' : ''}`;
   
 const renderConfig = (config: SlaConfiguration, withRowDiv = true): Node => 
@@ -143,39 +146,41 @@ async function onSave(e: Event): Promise<void> {
     await setConfigurations(t, configs);
 }
 
-async function onCancel(e: Event) {
+async function showMeatballsMenu(event): Promise<void> {
+    event.stopImmediatePropagation();
+
     const rowDiv = this.parentElement.parentElement;
     const index = [...rowDiv.parentElement.children].indexOf(rowDiv);
     const configs = await getConfigurations(t) || [];
 
-    rowDiv.classList.remove('editing');
+    const currentConfig = configs.splice(index, 1);
 
-    if ( index > configs.length - 1) {
-        rowDiv.innerHTML = getAddRowString(false);
-    
-    } else {
-        rowDiv.innerHTML = getConfigString(configs[index], false);
-    }
+    const report = {
+        text: 'Generate report (.csv)',
+        callback: async function (): Promise<void> {
+            t.popup({
+                title: 'Generating report',
+                url: './report.html',
+                args: { currentConfig: currentConfig[0] },  
+                height: 50,
+                mouseEvent: event,
+            });
+        },
+    };
 
-    // Unfreeze all rows and delete btns
-    const allRows = rowDiv.parentElement.children;
-    [].forEach.call(allRows, function(row) { 
-        row.classList.add('clickable');
+    const deleteSla = {
+        text: 'Delete SLA',
+        callback: async function (t2): Promise<void> {
+            await setConfigurations(t, configs);
+            t2.closePopup();
+        },
+    };
+
+    t.popup({
+        title: 'Options',
+        mouseEvent: event,
+        items: [report, deleteSla],
     });
-    const allDeleteBtns = document.querySelectorAll('#delete-btn');
-    [].forEach.call(allDeleteBtns, function(btn) {
-        btn.disabled = false;
-    });
-}
-
-async function onDelete(): Promise<void> {
-    const rowDiv = this.parentElement.parentElement;
-    const index = [...rowDiv.parentElement.children].indexOf(rowDiv);
-    const configs = await getConfigurations(t) || [];
-
-    configs.splice(index, 1);
-
-    await setConfigurations(t, configs);
 }
 
 function onSelectOptionChange(isStart: boolean) {
@@ -190,6 +195,33 @@ function onSelectOptionChange(isStart: boolean) {
     };
 }
 
+
+async function onCancel(): Promise<void> {
+    const rowDiv = this.parentElement.parentElement;
+    const index = [...rowDiv.parentElement.children].indexOf(rowDiv);
+    const configs = await getConfigurations(t) || [];
+
+    rowDiv.classList.remove('editing');
+
+    if ( index > configs.length - 1) {
+        rowDiv.innerHTML = getAddRowString(false);
+    
+    } else {
+        rowDiv.innerHTML = getConfigString(configs[index], false);
+    }
+
+    // Unfreeze all rows and meatballs menus
+    const allRows = rowDiv.parentElement.children;
+    [].forEach.call(allRows, function(row) { 
+        row.classList.add('clickable');
+    });
+    const allMeatballsBtns = document.querySelectorAll(MEATBALLS_BTN);
+    [].forEach.call(allMeatballsBtns, function(btn) {
+        btn.disabled = false;
+        btn.onclick = showMeatballsMenu;
+    });
+}
+
 async function onRowClick(): Promise<void> {
     if (!this.classList.contains('clickable')) {
         return;
@@ -201,8 +233,8 @@ async function onRowClick(): Promise<void> {
     [].forEach.call(allRows, function(row) { 
         row.classList.remove('clickable');
     });
-    const allDeleteBtns = document.querySelectorAll('#delete-btn');
-    [].forEach.call(allDeleteBtns, function(btn) {
+    const meatballsBtns = document.querySelectorAll(MEATBALLS_BTN);
+    [].forEach.call(meatballsBtns, function(btn) {
         btn.disabled = true;
     });
 
@@ -285,8 +317,8 @@ t.render(async function () {
     const rows = document.querySelectorAll('.row') as NodeListOf<HTMLElement>;
     Array.from(rows).forEach(row => row.onclick = onRowClick);
 
-    const deleteButtons = document.querySelectorAll('#delete-btn') as NodeListOf<HTMLElement>;
-    Array.from(deleteButtons).forEach(btn => btn.onclick = onDelete);
+    const meatballsBtns = document.querySelectorAll(MEATBALLS_BTN) as NodeListOf<HTMLElement>;
+    Array.from(meatballsBtns).forEach(btn => btn.onclick = showMeatballsMenu);
   
     t.sizeTo(document.getElementById('wrapper'));
 });

@@ -1,6 +1,6 @@
 declare const moment: any;
 
-import { setSlaData, SlaDataMap, SlaConfiguration, getCardActions, CardAction, CardActionType, SlaCondition } from './trello-util';
+import { setSlaData, SlaDataMap, SlaConfiguration, getCardActions, CardAction, CardActionType, SlaCondition, BoardAction } from './trello-util';
 
 type CardBadge = {
   text: string;
@@ -48,7 +48,8 @@ export const getHumanReadableTime = (realMinutes: number): string => {
     return `${negativeSign}${daysString}${spacer}${hoursString}`;
 };
 
-export const getMinutesRemaining = (startTime: number, endTime: number, config: SlaConfiguration): number => {
+export const getMinutesRemaining = (startTime: number, maybeEndTime: number | void, config: SlaConfiguration): number => {
+    const endTime = maybeEndTime ? maybeEndTime : moment().valueOf();
     const minutesElapsed = Math.floor((endTime - startTime) / 1000 / 60);
     const minutesRemaining = config.time - minutesElapsed;
     return minutesRemaining;
@@ -81,8 +82,7 @@ export const getRunningSlas = (data: SlaDataMap, configs: SlaConfiguration[], de
             if (startTime && !endTime) {
                 runningSlas.push({
                     dynamic: function() {
-                        const unix = moment().valueOf();
-                        const minutesRemaining = getMinutesRemaining(startTime, unix, config);
+                        const minutesRemaining = getMinutesRemaining(startTime, endTime, config);
                         const humanReadable = getHumanReadableTime(minutesRemaining);
                         return {
                             text: humanReadable,
@@ -213,6 +213,18 @@ export const updateConfigs = (t: any, configs: SlaConfiguration[], slaMap: SlaDa
             }
         }
     });
+};
+
+export const getActionsPerCard = (actions: BoardAction[]): {[key: string]: CardAction[]} => {
+    const map = {};
+    actions.forEach(action => {
+        if (map[action.data.card.id] === undefined) {
+            map[action.data.card.id] = [];
+        }
+        map[action.data.card.id].push(action);
+    });
+  
+    return map;
 };
 
 // https://gist.github.com/jed/982883

@@ -1,5 +1,5 @@
-import { getStartTime, getEndTime, getColor, getHumanReadableTime } from '../util';
-import { createCardAction, updateCardAction, slaCondition } from './mock-data';
+import { getActionsPerCard, getStartTime, getEndTime, getColor, getHumanReadableTime } from '../util';
+import { createCardAction, updateCardAction, slaCondition, createBoardAction } from './mock-data';
 
 const octoberDate = "2019-10-01T05:10:58.000Z";
 const octoberDateUnix = 1569906658000;
@@ -116,5 +116,18 @@ describe('getEndTime', () => {
             expect(getHumanReadableTime(-1799)).toEqual('-1d 5h'); // 29 hours and 59min
         });
     });
-  
+});
+
+describe('getActionsPerCard', () => {
+    test('should return map of actions per card', () => {
+        const boardActions = ['1', '2', '3'].map(cardId => createBoardAction(cardId));
+
+        const expectedResult = {
+            '1': [boardActions[0]],
+            '2': [boardActions[1]],
+            '3': [boardActions[2]],
+        };
+
+        expect(getActionsPerCard(boardActions)).toEqual(expectedResult);
+    });
 });

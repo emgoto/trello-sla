@@ -4,7 +4,8 @@ module.exports = {
   entry: {
     index: './src/index.ts',
     settings: './src/settings.ts',
-    auth: './src/auth.ts'
+    auth: './src/auth.ts',
+    report: './src/report.ts',
   },
   output: {
     filename: '[name].js',

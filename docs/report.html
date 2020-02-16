@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-154203226-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-154203226-1');
+  </script>
+
+  <link rel="stylesheet" href="https://p.trellocdn.com/power-up.min.css">
+  <script src="https://code.jquery.com/jquery-1.7.1.min.js"></script>
+  <script src="https://p.trellocdn.com/power-up.min.js"></script>
+  <script src="https://trello.com/1/client.js?key=652d72f229f65b3457533bd55fdcf436"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+  <script src="js/report.js"></script>
+
+  <style>
+    /* spinner CSS to https://codepen.io/benrugg/pen/eKHkL */
+    .loadingSpinner {
+      border: 3px solid #CCC;
+      border-top-color: rgba(0, 0, 0, 0);
+      border-left-color: rgba(0, 0, 0, 0);
+      width: 12px;
+      height: 12px;
+      opacity: .8;
+      border-radius: 50%;
+      animation: loadingSpinner 1s infinite linear;
+      -webkit-animation: loadingSpinner 1s infinite linear;
+      margin: 0 auto;
+
+      margin-top: 8px;
+    }
+
+    @keyframes loadingSpinner {
+        from { transform: rotate(0deg)   }
+        to   { transform: rotate(360deg) }
+    }
+
+    @-webkit-keyframes loadingSpinner {
+        from { -webkit-transform: rotate(0deg)   }
+        to   { -webkit-transform: rotate(360deg) }
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    #downloadLink {
+      margin-left: 95px; /* sort of centred */
+    };
+  </style>
+</head>
+
+<body>
+  <div class="loadingSpinner"></div>
+  <a id="downloadLink" class="hidden"><button>Download</button></a>
+</body>
+
+</html>
