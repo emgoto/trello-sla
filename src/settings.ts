@@ -10,42 +10,44 @@ let lists = [];
 const START_SELECT = '.start-select';
 const END_SELECT = '.end-select';
 const HOURS_INPUT = '.hours-input';
-const MINUTES_INPUT = '.minutes-input'
+const MINUTES_INPUT = '.minutes-input';
 const NAME_INPUT = '.name-input';
 
 const stringToNode = (domString: string): Node => {
-  const wrapper = document.createElement('div');
-  wrapper.innerHTML = domString;
-  return wrapper.firstChild;
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = domString;
+    return wrapper.firstChild;
 };
 
 const columnIdToName = (id: string): string => {
-  const list = lists.find(list => list.id === id);
-  return list ? list.name : '<i>List no longer exists</i>';
-}
-
-const createOptionsForNewRow = (isStart: boolean): Element[] =>
-  isStart ? createOptions(lists[0].id, lists[1].id) : createOptions(lists[1].id, lists[0].id);
+    const list = lists.find(list => list.id === id);
+    return list ? list.name : '<i>List no longer exists</i>';
+};
 
 const createOptions = (currentValue: string, filteredValue: string): Element[] => {
-  const options = [];
-  lists.forEach(list => {
-    if (list.id !== filteredValue) {
-      let option = document.createElement('option');
-      option.setAttribute('value', list.id);
-      option.appendChild(document.createTextNode(list.name));
-  
-      if (list.id === currentValue) {
-        option.selected = true;
-      }
-      options.push(option);
-    }
-  });
-  return options;
-}
+    const options = [];
+    lists.forEach(list => {
+        if (list.id !== filteredValue) {
+            const option = document.createElement('option');
+            option.setAttribute('value', list.id);
+            option.appendChild(document.createTextNode(list.name));
 
-const getConfigString = (config: SlaConfiguration, withRowDiv: boolean = true): string => 
-  `${withRowDiv ? '<div class="row clickable">' : ''}
+            if (list.id === currentValue) {
+                option.selected = true;
+            }
+            options.push(option);
+        }
+    });
+    return options;
+};
+
+
+const createOptionsForNewRow = (isStart: boolean): Element[] =>
+    isStart ? createOptions(lists[0].id, lists[1].id) : createOptions(lists[1].id, lists[0].id);
+
+
+const getConfigString = (config: SlaConfiguration, withRowDiv = true): string => 
+    `${withRowDiv ? '<div class="row clickable">' : ''}
       <div class="col0">${truncate(config.name, 40, true)}</div>
       <div class="col1">
         <span class="condition-type">Start when card is in list</span>
@@ -57,11 +59,11 @@ const getConfigString = (config: SlaConfiguration, withRowDiv: boolean = true): 
       <div class="col3"><button id="delete-btn" class="mod-bottom">Delete</button></div>
   ${withRowDiv ? '</div>' : ''}`;
   
-const renderConfig = (config: SlaConfiguration, withRowDiv: boolean = true): Node => 
-  stringToNode(getConfigString(config, withRowDiv));
+const renderConfig = (config: SlaConfiguration, withRowDiv = true): Node => 
+    stringToNode(getConfigString(config, withRowDiv));
 
 const getConfigEditMode = (config?: SlaConfiguration): string => {
-  const domString = `
+    const domString = `
     <div class="col0">
       <input class="name-input" value=${config ? `"${config.name}"` : "SLA Name"}></input>
     </div>
@@ -80,210 +82,211 @@ const getConfigEditMode = (config?: SlaConfiguration): string => {
         <button id="cancel-btn" class="mod-bottom">Cancel</button>
     </div>`;
 
-  return domString;
-}
+    return domString;
+};
 
-const renderAddRow = (withRowDiv: boolean = true): Node => 
-  stringToNode(getAddRowString(withRowDiv));
-
-const getAddRowString = (withRowDiv: boolean = true): string =>
-  `${withRowDiv ? '<div class="row clickable">' : ''}
+const getAddRowString = (withRowDiv = true): string =>
+    `${withRowDiv ? '<div class="row clickable">' : ''}
   <div class="add-row">
   Add SLA
   </div>
   ${withRowDiv ? '</div>' : ''}`;
 
+const renderAddRow = (withRowDiv = true): Node => 
+    stringToNode(getAddRowString(withRowDiv));
+
+
 const renderNotEnoughListsMessage = (): Node =>
-  stringToNode(`<div class="center"><p>This Power-Up requires you to have at least two lists! </p></div>`);
+    stringToNode(`<div class="center"><p>This Power-Up requires you to have at least two lists! </p></div>`);
 
-async function onSave(e: Event) {
-  const rowDiv = this.parentElement.parentElement;
-  const index = [...rowDiv.parentElement.children].indexOf(rowDiv);
+async function onSave(e: Event): Promise<void> {
+    const rowDiv = this.parentElement.parentElement;
+    const index = [...rowDiv.parentElement.children].indexOf(rowDiv);
 
-  const start = rowDiv.querySelector(START_SELECT).selectedOptions[0].value;
-  const end = rowDiv.querySelector(END_SELECT).selectedOptions[0].value;
-  const hours = rowDiv.querySelector(HOURS_INPUT).value || 0;
-  const minutes = rowDiv.querySelector(MINUTES_INPUT).value || 0;
-  const name = rowDiv.querySelector(NAME_INPUT).value || '';
+    const start = rowDiv.querySelector(START_SELECT).selectedOptions[0].value;
+    const end = rowDiv.querySelector(END_SELECT).selectedOptions[0].value;
+    const hours = rowDiv.querySelector(HOURS_INPUT).value || 0;
+    const minutes = rowDiv.querySelector(MINUTES_INPUT).value || 0;
+    const name = rowDiv.querySelector(NAME_INPUT).value || '';
 
-  const time = parseInt(hours, 10) * 60 + parseInt(minutes, 10);
+    const time = parseInt(hours, 10) * 60 + parseInt(minutes, 10);
 
-  const configs = await getConfigurations(t) || [];
+    const configs = await getConfigurations(t) || [];
 
-  let newRow = false;
-  if ( index > configs.length - 1) {
-    newRow = true;
-  }
+    let newRow = false;
+    if ( index > configs.length - 1) {
+        newRow = true;
+    }
 
-  if (newRow) {
-    const row = {
-      id: generateUuid(),
-      startCondition: {
-        type: Condition.ColumnName,
-        id: start
-      },
-      endCondition: {
-        type: Condition.ColumnName,
-        id: end,
-      },
-      time,
-      name,
-    };
-    configs.push(row);
-  } else {
-    configs[index].startCondition.id = start;
-    configs[index].endCondition.id = end;
-    configs[index].time = time;
-    configs[index].name = truncate(name, 50, false);
-  }
+    if (newRow) {
+        const row = {
+            id: generateUuid(),
+            startCondition: {
+                type: Condition.ColumnName,
+                id: start
+            },
+            endCondition: {
+                type: Condition.ColumnName,
+                id: end,
+            },
+            time,
+            name,
+        };
+        configs.push(row);
+    } else {
+        configs[index].startCondition.id = start;
+        configs[index].endCondition.id = end;
+        configs[index].time = time;
+        configs[index].name = truncate(name, 50, false);
+    }
 
-  await setConfigurations(t, configs);
-
+    await setConfigurations(t, configs);
 }
 
 async function onCancel(e: Event) {
-  const rowDiv = this.parentElement.parentElement;
-  const index = [...rowDiv.parentElement.children].indexOf(rowDiv);
-  const configs = await getConfigurations(t) || [];
+    const rowDiv = this.parentElement.parentElement;
+    const index = [...rowDiv.parentElement.children].indexOf(rowDiv);
+    const configs = await getConfigurations(t) || [];
 
-  rowDiv.classList.remove('editing');
+    rowDiv.classList.remove('editing');
 
-  if ( index > configs.length - 1) {
-    rowDiv.innerHTML = getAddRowString(false);
+    if ( index > configs.length - 1) {
+        rowDiv.innerHTML = getAddRowString(false);
     
-  } else {
-    rowDiv.innerHTML = getConfigString(configs[index], false);
-  }
+    } else {
+        rowDiv.innerHTML = getConfigString(configs[index], false);
+    }
 
-  // Unfreeze all rows and delete btns
-  const allRows = rowDiv.parentElement.children;
-  [].forEach.call(allRows, function(row) { 
-    row.classList.add('clickable');
-  });
-  const allDeleteBtns = document.querySelectorAll('#delete-btn');
-  [].forEach.call(allDeleteBtns, function(btn) {
-    btn.disabled = false;
-  });
+    // Unfreeze all rows and delete btns
+    const allRows = rowDiv.parentElement.children;
+    [].forEach.call(allRows, function(row) { 
+        row.classList.add('clickable');
+    });
+    const allDeleteBtns = document.querySelectorAll('#delete-btn');
+    [].forEach.call(allDeleteBtns, function(btn) {
+        btn.disabled = false;
+    });
 }
 
-async function onDelete(e: Event) {
-  const rowDiv = this.parentElement.parentElement;
-  const index = [...rowDiv.parentElement.children].indexOf(rowDiv);
-  const configs = await getConfigurations(t) || [];
+async function onDelete(): Promise<void> {
+    const rowDiv = this.parentElement.parentElement;
+    const index = [...rowDiv.parentElement.children].indexOf(rowDiv);
+    const configs = await getConfigurations(t) || [];
 
-  configs.splice(index, 1);
+    configs.splice(index, 1);
 
-  await setConfigurations(t, configs);
+    await setConfigurations(t, configs);
 }
 
 function onSelectOptionChange(isStart: boolean) {
-  return function fn(e: Event) {
-    const rowDiv = this.parentElement.parentElement;
-    const select = isStart ? rowDiv.querySelector(END_SELECT) : rowDiv.querySelector(START_SELECT);
-    const options = createOptions(select.selectedOptions[0].value, this.selectedOptions[0].value);
-    select.innerHTML = undefined;
-    options.forEach(option => {
-      select.appendChild(option);
-    })
-  }
+    return function fn(): void {
+        const rowDiv = this.parentElement.parentElement;
+        const select = isStart ? rowDiv.querySelector(END_SELECT) : rowDiv.querySelector(START_SELECT);
+        const options = createOptions(select.selectedOptions[0].value, this.selectedOptions[0].value);
+        select.innerHTML = undefined;
+        options.forEach(option => {
+            select.appendChild(option);
+        });
+    };
 }
 
-async function onRowClick(e: Event): Promise<void> {
-  if (!this.classList.contains('clickable')) {
-    return;
-  }
+async function onRowClick(): Promise<void> {
+    if (!this.classList.contains('clickable')) {
+        return;
+    }
 
-  // Freeze all other rows and delete btns
-  this.classList.add('editing');
-  const allRows = this.parentElement.children;
-  [].forEach.call(allRows, function(row) { 
-    row.classList.remove('clickable');
-  });
-  const allDeleteBtns = document.querySelectorAll('#delete-btn');
-  [].forEach.call(allDeleteBtns, function(btn) {
-    btn.disabled = true;
-  });
+    // Freeze all other rows and delete btns
+    this.classList.add('editing');
+    const allRows = this.parentElement.children;
+    [].forEach.call(allRows, function(row) { 
+        row.classList.remove('clickable');
+    });
+    const allDeleteBtns = document.querySelectorAll('#delete-btn');
+    [].forEach.call(allDeleteBtns, function(btn) {
+        btn.disabled = true;
+    });
 
-  const index = [...this.parentElement.children].indexOf(this);
-  const configs: SlaConfiguration[] = await getConfigurations(t) || [];
+    const index = [...this.parentElement.children].indexOf(this);
+    const configs: SlaConfiguration[] = await getConfigurations(t) || [];
 
-  let newRow = false;
-  if ( index > configs.length - 1) {
-    newRow = true;
-  }
+    let newRow = false;
+    if ( index > configs.length - 1) {
+        newRow = true;
+    }
 
-  const config = newRow ? undefined : configs[index];
+    const config = newRow ? undefined : configs[index];
 
-  this.innerHTML = getConfigEditMode(config);
+    this.innerHTML = getConfigEditMode(config);
 
-  const startOptions = newRow ? createOptionsForNewRow(true) : createOptions(config.startCondition.id, config.endCondition.id);
-  const endOptions = newRow ? createOptionsForNewRow(false) : createOptions(config.endCondition.id, config.startCondition.id);
+    const startOptions = newRow ? createOptionsForNewRow(true) : createOptions(config.startCondition.id, config.endCondition.id);
+    const endOptions = newRow ? createOptionsForNewRow(false) : createOptions(config.endCondition.id, config.startCondition.id);
 
-  const startSelect = this.querySelector(START_SELECT);
-  const endSelect = this.querySelector(END_SELECT)
+    const startSelect = this.querySelector(START_SELECT);
+    const endSelect = this.querySelector(END_SELECT);
 
-  // If change option, need to make sure that the option is not present in the other select
-  startSelect.addEventListener("change", onSelectOptionChange(true));
-  endSelect.addEventListener("change", onSelectOptionChange(false));
-  this.querySelector('#save-btn').onclick = onSave;
-  this.querySelector('#cancel-btn').onclick = onCancel;
+    // If change option, need to make sure that the option is not present in the other select
+    startSelect.addEventListener("change", onSelectOptionChange(true));
+    endSelect.addEventListener("change", onSelectOptionChange(false));
+    this.querySelector('#save-btn').onclick = onSave;
+    this.querySelector('#cancel-btn').onclick = onCancel;
 
-  startOptions.forEach(option => {
-    startSelect.appendChild(option);
-  })
-  endOptions.forEach(option => {
-    endSelect.appendChild(option);
-  });
+    startOptions.forEach(option => {
+        startSelect.appendChild(option);
+    });
+    endOptions.forEach(option => {
+        endSelect.appendChild(option);
+    });
 }
 
 function onAuthenticate() {
-  return Trello.authorize({
-    type: "popup",
-    name: "SLAs for Trello",
-    expiration: "never",
-    return_url:"https://emgoto.github.io/trello-sla/", 
-    success: () => {
-      setToken(t, Trello.token());
-    },
-    error: () => { },
-  });
+    return Trello.authorize({
+        type: "popup",
+        name: "SLAs for Trello",
+        expiration: "never",
+        // eslint-disable-next-line @typescript-eslint/camelcase
+        return_url:"https://emgoto.github.io/trello-sla/", 
+        success: () => {
+            setToken(t, Trello.token());
+        },
+        error: () => { },
+    });
 };
 
 const renderAuthenticateButton = () => 
-  stringToNode(`<div class="center"><p>To view and configure SLAs, you will need to first authenticate with SLAs for Trello.</p><button id="authenticate-btn" class="mod-bottom">Authenticate</button><p></p></div>`);
+    stringToNode(`<div class="center"><p>To view and configure SLAs, you will need to first authenticate with SLAs for Trello.</p><button id="authenticate-btn" class="mod-bottom">Authenticate</button><p></p></div>`);
 
 t.render(async function () {
-  const container = document.getElementById('container');
-  container.innerHTML = '';
-  const token = await getToken(t);
-  if (!token) {
-    container.appendChild(renderAuthenticateButton());
-    document.getElementById('authenticate-btn').onclick = onAuthenticate;
-    t.sizeTo(document.getElementById('wrapper'));
-    return;
-  }
+    const container = document.getElementById('container');
+    container.innerHTML = '';
+    const token = await getToken(t);
+    if (!token) {
+        container.appendChild(renderAuthenticateButton());
+        document.getElementById('authenticate-btn').onclick = onAuthenticate;
+        t.sizeTo(document.getElementById('wrapper'));
+        return;
+    }
 
-  lists = await getLists(t);
+    lists = await getLists(t);
 
-  if (lists.length < 2) {
-    container.appendChild(renderNotEnoughListsMessage());
-    t.sizeTo(document.getElementById('wrapper'));
-    return;
-  }
+    if (lists.length < 2) {
+        container.appendChild(renderNotEnoughListsMessage());
+        t.sizeTo(document.getElementById('wrapper'));
+        return;
+    }
 
-  const configs = await getConfigurations(t) || [];
+    const configs = await getConfigurations(t) || [];
 
-  configs.forEach((config) => {
-    container.appendChild(renderConfig(config));
-  });
+    configs.forEach((config) => {
+        container.appendChild(renderConfig(config));
+    });
 
-  container.appendChild(renderAddRow());
+    container.appendChild(renderAddRow());
 
-  const rows = document.querySelectorAll('.row') as NodeListOf<HTMLElement>;
-  Array.from(rows).forEach(row => row.onclick = onRowClick);
+    const rows = document.querySelectorAll('.row') as NodeListOf<HTMLElement>;
+    Array.from(rows).forEach(row => row.onclick = onRowClick);
 
-  const deleteButtons = document.querySelectorAll('#delete-btn') as NodeListOf<HTMLElement>;
-  Array.from(deleteButtons).forEach(btn => btn.onclick = onDelete);
+    const deleteButtons = document.querySelectorAll('#delete-btn') as NodeListOf<HTMLElement>;
+    Array.from(deleteButtons).forEach(btn => btn.onclick = onDelete);
   
-  t.sizeTo(document.getElementById('wrapper'));
+    t.sizeTo(document.getElementById('wrapper'));
 });

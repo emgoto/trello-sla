@@ -74,7 +74,7 @@ export const getCardActions = async (t): Promise<CardAction[]> => {
             setToken(t, undefined);
         }
     });
-  };
+};
 
 export const getLists = async (t): Promise<List[]> => {
     const { board: boardId } = t.getContext();
@@ -84,5 +84,5 @@ export const getLists = async (t): Promise<List[]> => {
         if (e && e.response && e.response.status && e.response.status === 401) {
             setToken(t, undefined);
         }
-      });
+    });
 }
