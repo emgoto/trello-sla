@@ -7,14 +7,17 @@ This Power-Up's docs folder is published using Github Pages and can be accessed 
 ## Testing the power-up locally with Jekyll and ngrok
 Github pages uses Jekyll so you'll need to do a few things to test this locally:
 
+Initial setup:
 ```
 gem install github-pages
+
+Every time:
+```
 jekyll serve
 ./ngrok http 4000 #in another terminal window
+npm run build -- --watch # in another terminal window
 ```
 [See a full explanation here](https://www.emgoto.com/testing-trello-power-ups-on-github-pages/)
-
-Also run `npm run build -- --watch` in another tab to watch your .js changes.
 
 ## Pushing your changes
 Make sure to run `npm run build` before pushing changes. This will use the settings in `webpack.config.js` and put your js files into the `docs/js` folder.

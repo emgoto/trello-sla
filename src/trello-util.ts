@@ -9,6 +9,8 @@ export enum Condition {
 
 export enum CardActionType { 
     createCard = "createCard",
+    emailCard = "emailCard",
+    copyCard = "copyCard",
     updateCard = "updateCard"
 }
 
@@ -34,7 +36,7 @@ export type SlaDataMap = {
     [id: number]: SlaData;
 }
 
-export type CardAction = CreateCardAction | UpdateCardAction;
+export type CardAction = CreateCardAction | UpdateCardAction | CopyCardAction | EmailCardAction;
 
 export type UpdateCardAction = {
     data: {
@@ -54,6 +56,26 @@ export type CreateCardAction = {
     type: typeof CardActionType.createCard;
     date: string; // format 2019-11-29T21:05:28.510Z
 }
+
+export type CopyCardAction = {
+    data: {
+        list: {id: string};
+        card: NameAndId;
+    };
+    type: typeof CardActionType.copyCard;
+    date: string; // format 2019-11-29T21:05:28.510Z
+};
+
+
+// TODO: I don't actually know the datashape of email actions, but would assume it is this
+export type EmailCardAction = {
+    data: {
+        list: {id: string};
+        card: NameAndId;
+    };
+    type: typeof CardActionType.emailCard;
+    date: string; // format 2019-11-29T21:05:28.510Z
+};
 
 type NameAndId = {
     id: string;

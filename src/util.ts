@@ -135,7 +135,8 @@ export const getStartTime = (actions: CardAction[], startCondition: SlaCondition
     let startTime: number | void = undefined;
 
     actions.forEach((action) => {
-        if (action.type === CardActionType.createCard && action.data.list.id === startCondition.id) {
+        if ((action.type === CardActionType.createCard || action.type === CardActionType.copyCard || action.type === CardActionType.emailCard)
+         && action.data.list.id === startCondition.id) {
             startTime = moment(action.date).valueOf();
         } else if (action.type === CardActionType.updateCard &&
       action.data.listAfter.id === startCondition.id &&
