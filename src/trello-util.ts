@@ -126,7 +126,7 @@ export const getBoardActions = async (t): Promise<BoardAction[]> => {
 export const getCardActions = async (t): Promise<CardAction[]> => {
     const { card: cardId } = t.getContext();
     const token = await getToken(t);
-    const url = `https://api.trello.com/1/cards/${cardId}/actions?filter=updateCard:idList,createCard&key=${key}&token=${token}`;
+    const url = `https://api.trello.com/1/cards/${cardId}/actions?filter=updateCard:idList,createCard,copyCard,emailCard&key=${key}&token=${token}`;
     return axios.get(url).then(response => response.data).catch((e) => {
         if (e && e.response && e.response.status && e.response.status === 401) {
             setToken(t, undefined);
