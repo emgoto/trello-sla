@@ -1,4 +1,4 @@
-import { CreateCardAction, UpdateCardAction, CardActionType, SlaCondition, Condition, BoardAction } from '../trello-util';
+import { CreateCardAction, UpdateCardAction, CardActionType, SlaCondition, Condition, BoardAction, CardAction } from '../trello-util';
 
 export const createCardAction = (listId: string, date: string): CreateCardAction => ({
     data: {
@@ -32,3 +32,15 @@ export const createBoardAction = (cardId: string): BoardAction => ({
     date: '',
     type: CardActionType.updateCard,
 });
+
+const firstList = '5eb9ca8529fc704526a1dd97';
+const secondList = '5f0109614e2c3a479b0696ab';
+
+export const startInSecondListCondition: SlaCondition = slaCondition(secondList);
+export const expectedSecondListDate =  1593904560842;
+
+const createdInFirstListAction = createCardAction(firstList, "2020-07-04T22:58:18.573Z");
+const movedToSecondListAction = updateCardAction(secondList, "2020-07-04T23:16:00.842Z");
+
+export const startInSecondListActions: CardAction[] = [movedToSecondListAction, createdInFirstListAction];
+

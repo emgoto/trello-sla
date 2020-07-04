@@ -22,7 +22,7 @@ const stringToNode = (domString: string): Node => {
 
 const columnIdToName = (id: string): string => {
     const list = lists.find(list => list.id === id);
-    return list ? list.name : '<i>List no longer exists</i>';
+    return list ? list.name : 'List no longer exists';
 };
 
 const createOptions = (currentValue: string, filteredValue: string): Element[] => {
@@ -153,6 +153,7 @@ async function showMeatballsMenu(event): Promise<void> {
     const index = [...rowDiv.parentElement.children].indexOf(rowDiv);
     const configs = await getConfigurations(t) || [];
 
+    // Gets the current config, and removes it from the configs list
     const currentConfig = configs.splice(index, 1);
 
     const report = {

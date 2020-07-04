@@ -1,5 +1,5 @@
 import { getActionsPerCard, getStartTime, getEndTime, getColor, getHumanReadableTime } from '../util';
-import { createCardAction, updateCardAction, slaCondition, createBoardAction } from './mock-data';
+import { createCardAction, updateCardAction, slaCondition, createBoardAction, startInSecondListCondition, startInSecondListActions, expectedSecondListDate } from './mock-data';
 
 const octoberDate = "2019-10-01T05:10:58.000Z";
 const octoberDateUnix = 1569906658000;
@@ -44,6 +44,12 @@ describe('getStartTime', () => {
         expect(
             getStartTime([updateCardDecember, updateCardNovember], slaCondition("list1"))
         ).toEqual(novemberDateUnix);
+    });
+
+    test('should not use creation time for wrong list', () => {
+        expect(
+            getStartTime(startInSecondListActions, startInSecondListCondition)
+        ).toEqual(expectedSecondListDate);
     });
 });
 

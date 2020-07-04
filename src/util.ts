@@ -131,16 +131,30 @@ export const getEndTime = (actions: CardAction[], endCondition: SlaCondition, st
     return endTime;
 };
 
+const wasCreatedInThisList = (action: CardAction, expectedId: string): boolean => {
+    if (action.type === CardActionType.createCard || action.type === CardActionType.copyCard || action.type === CardActionType.emailCard) {
+        return action.data.list.id === expectedId;
+    }
+
+    return false;
+};
+
+const wasUpdatedInThisList = (action: CardAction, expectedId: string): boolean => {
+    if (action.type === CardActionType.updateCard) {
+        return action.data.listAfter.id === expectedId;
+    }
+
+    return false;
+};
+
 export const getStartTime = (actions: CardAction[], startCondition: SlaCondition): number | void => {
     let startTime: number | void = undefined;
-
+    
     actions.forEach((action) => {
-        if ((action.type === CardActionType.createCard || action.type === CardActionType.copyCard || action.type === CardActionType.emailCard)
-         && action.data.list.id === startCondition.id) {
+        if (wasCreatedInThisList(action, startCondition.id)) {
             startTime = moment(action.date).valueOf();
-        } else if (action.type === CardActionType.updateCard &&
-      action.data.listAfter.id === startCondition.id &&
-      !startTime || (moment(action.date).valueOf() < startTime)) {
+        } else if (wasUpdatedInThisList(action, startCondition.id) &&
+      (!startTime || (moment(action.date).valueOf() < startTime))) {
             startTime = moment(action.date).valueOf();
         }
     });
