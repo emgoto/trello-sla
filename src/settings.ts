@@ -111,6 +111,7 @@ async function onSave(e: Event): Promise<void> {
     const hours = rowDiv.querySelector(HOURS_INPUT).value || 0;
     const minutes = rowDiv.querySelector(MINUTES_INPUT).value || 0;
     const name = rowDiv.querySelector(NAME_INPUT).value || '';
+    const safeName = t.safe(name);
 
     const time = parseInt(hours, 10) * 60 + parseInt(minutes, 10);
 
@@ -133,14 +134,14 @@ async function onSave(e: Event): Promise<void> {
                 id: end,
             },
             time,
-            name,
+            name: safeName,
         };
         configs.push(row);
     } else {
         configs[index].startCondition.id = start;
         configs[index].endCondition.id = end;
         configs[index].time = time;
-        configs[index].name = truncate(name, 50, false);
+        configs[index].name = truncate(safeName, 50, false);
     }
 
     await setConfigurations(t, configs);
