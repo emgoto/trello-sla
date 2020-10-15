@@ -22,7 +22,7 @@ const stringToNode = (domString: string): Node => {
 
 const columnIdToName = (id: string): string => {
     const list = lists.find(list => list.id === id);
-    return list ? list.name : 'List no longer exists';
+    return list ? t.safe(list.name) : 'List no longer exists';
 };
 
 const createOptions = (currentValue: string, filteredValue: string): Element[] => {
