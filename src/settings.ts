@@ -22,7 +22,7 @@ const stringToNode = (domString: string): Node => {
 
 const columnIdToName = (id: string): string => {
     const list = lists.find(list => list.id === id);
-    return list ? t.safe(list.name) : 'List no longer exists';
+    return list ? truncate(t.safe(list.name), 20, true) : 'List no longer exists';
 };
 
 const createOptions = (currentValue: string, filteredValue: string): Element[] => {
@@ -52,7 +52,7 @@ const getConfigString = (config: SlaConfiguration, withRowDiv = true): string =>
       <div class="col0">${truncate(config.name, 40, true)}</div>
       <div class="col1">
         <span class="condition-type">Start when card is in list</span>
-        <br>${truncate(columnIdToName(config.startCondition.id), 20, true)}
+        <br>${columnIdToName(config.startCondition.id)}
         <br><span class="condition-type">Ends when card is in list</span>
         <br>${columnIdToName(config.endCondition.id)}
       </div>
