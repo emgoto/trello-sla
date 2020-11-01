@@ -31,7 +31,7 @@ const createOptions = (currentValue: string, filteredValue: string): Element[] =
         if (list.id !== filteredValue) {
             const option = document.createElement('option');
             option.setAttribute('value', list.id);
-            option.appendChild(document.createTextNode(list.name));
+            option.appendChild(document.createTextNode(t.safe(list.name)));
 
             if (list.id === currentValue) {
                 option.selected = true;
@@ -49,7 +49,7 @@ const createOptionsForNewRow = (isStart: boolean): Element[] =>
 
 const getConfigString = (config: SlaConfiguration, withRowDiv = true): string => 
     `${withRowDiv ? '<div class="row clickable">' : ''}
-      <div class="col0">${truncate(config.name, 40, true)}</div>
+      <div class="col0">${truncate(t.safe(config.name), 40, true)}</div>
       <div class="col1">
         <span class="condition-type">Start when card is in list</span>
         <br>${columnIdToName(config.startCondition.id)}
@@ -68,7 +68,7 @@ const renderConfig = (config: SlaConfiguration, withRowDiv = true): Node =>
 const getConfigEditMode = (config?: SlaConfiguration): string => {
     const domString = `
     <div class="col0">
-      <input class="name-input" value=${config ? `"${config.name}"` : "SLA Name"}></input>
+      <input class="name-input" value=${config ? `"${t.safe(config.name)}"` : "SLA Name"}></input>
     </div>
     <div class="col1">
       <span class="condition-type">Start when card is in list</span>
